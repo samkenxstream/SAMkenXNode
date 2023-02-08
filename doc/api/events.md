@@ -1232,13 +1232,13 @@ import { getEventListeners, EventEmitter } from 'node:events';
   const ee = new EventEmitter();
   const listener = () => console.log('Events are fun');
   ee.on('foo', listener);
-  getEventListeners(ee, 'foo'); // [listener]
+  console.log(getEventListeners(ee, 'foo')); // [ [Function: listener] ]
 }
 {
   const et = new EventTarget();
   const listener = () => console.log('Events are fun');
   et.addEventListener('foo', listener);
-  getEventListeners(et, 'foo'); // [listener]
+  console.log(getEventListeners(et, 'foo')); // [ [Function: listener] ]
 }
 ```
 
@@ -1249,13 +1249,13 @@ const { getEventListeners, EventEmitter } = require('node:events');
   const ee = new EventEmitter();
   const listener = () => console.log('Events are fun');
   ee.on('foo', listener);
-  getEventListeners(ee, 'foo'); // [listener]
+  console.log(getEventListeners(ee, 'foo')); // [ [Function: listener] ]
 }
 {
   const et = new EventTarget();
   const listener = () => console.log('Events are fun');
   et.addEventListener('foo', listener);
-  getEventListeners(et, 'foo'); // [listener]
+  console.log(getEventListeners(et, 'foo')); // [ [Function: listener] ]
 }
 ```
 
@@ -2088,7 +2088,7 @@ This is not used in Node.js and is provided purely for completeness.
 #### `event.initEvent(type[, bubbles[, cancelable]])`
 
 <!-- YAML
-added: REPLACEME
+added: v19.5.0
 -->
 
 > Stability: 3 - Legacy: The WHATWG spec considers it deprecated and users

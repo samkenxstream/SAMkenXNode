@@ -316,6 +316,8 @@ For information about the governance of the Node.js project, see
   **Daniel Bevenius** <<daniel.bevenius@gmail.com>> (he/him)
 * [danielleadams](https://github.com/danielleadams) -
   **Danielle Adams** <<adamzdanielle@gmail.com>> (she/her)
+* [deokjinkim](https://github.com/deokjinkim) -
+  **Deokjin Kim** <<deokjin81.kim@gmail.com>> (he/him)
 * [devnexen](https://github.com/devnexen) -
   **David Carlier** <<devnexen@gmail.com>>
 * [devsnek](https://github.com/devsnek) -
@@ -324,8 +326,6 @@ For information about the governance of the Node.js project, see
   **Adrian Estrada** <<edsadr@gmail.com>> (he/him)
 * [erickwendel](https://github.com/erickwendel) -
   **Erick Wendel** <<erick.workspace@gmail.com>> (he/him)
-* [evanlucas](https://github.com/evanlucas) -
-  **Evan Lucas** <<evanlucas@me.com>> (he/him)
 * [fhinkel](https://github.com/fhinkel) -
   **Franziska Hinkelmann** <<franziska.hinkelmann@gmail.com>> (she/her)
 * [F3n67u](https://github.com/F3n67u) -
@@ -348,8 +348,6 @@ For information about the governance of the Node.js project, see
   **Zeyu "Alex" Yang** <<himself65@outlook.com>> (he/him)
 * [iansu](https://github.com/iansu) -
   **Ian Sutherland** <<ian@iansutherland.ca>>
-* [indutny](https://github.com/indutny) -
-  **Fedor Indutny** <<fedor@indutny.com>>
 * [JacksonTian](https://github.com/JacksonTian) -
   **Jackson Tian** <<shyvo1987@gmail.com>>
 * [JakobJingleheimer](https://github.com/JakobJingleheimer) -
@@ -434,8 +432,6 @@ For information about the governance of the Node.js project, see
   **Paolo Insogna** <<paolo@cowtech.it>> (he/him)
 * [srl295](https://github.com/srl295) -
   **Steven R Loomis** <<srl295@gmail.com>>
-* [starkwang](https://github.com/starkwang) -
-  **Weijia Wang** <<starkwang@126.com>>
 * [sxa](https://github.com/sxa) -
   **Stewart X Addison** <<sxa@redhat.com>> (he/him)
 * [targos](https://github.com/targos) -
@@ -512,6 +508,8 @@ For information about the governance of the Node.js project, see
   **Alexander Makarenko** <<estliberitas@gmail.com>>
 * [eugeneo](https://github.com/eugeneo) -
   **Eugene Ostroukhov** <<eostroukhov@google.com>>
+* [evanlucas](https://github.com/evanlucas) -
+  **Evan Lucas** <<evanlucas@me.com>> (he/him)
 * [firedfox](https://github.com/firedfox) -
   **Daniel Wang** <<wangyang0123@gmail.com>>
 * [Fishrock123](https://github.com/Fishrock123) -
@@ -534,6 +532,8 @@ For information about the governance of the Node.js project, see
   **Imran Iqbal** <<imran@imraniqbal.org>>
 * [imyller](https://github.com/imyller) -
   **Ilkka Myller** <<ilkka.myller@nodefield.com>>
+* [indutny](https://github.com/indutny) -
+  **Fedor Indutny** <<fedor@indutny.com>>
 * [isaacs](https://github.com/isaacs) -
   **Isaac Z. Schlueter** <<i@izs.me>>
 * [italoacasas](https://github.com/italoacasas) -
@@ -636,6 +636,8 @@ For information about the governance of the Node.js project, see
   **Shigeki Ohtsu** <<ohtsu@ohtsu.org>> (he/him)
 * [silverwind](https://github.com/silverwind) -
   **Roman Reiss** <<me@silverwind.io>>
+* [starkwang](https://github.com/starkwang) -
+  **Weijia Wang** <<starkwang@126.com>>
 * [stefanmb](https://github.com/stefanmb) -
   **Stefan Budeanu** <<stefan@budeanu.com>>
 * [tellnes](https://github.com/tellnes) -
