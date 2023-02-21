@@ -151,7 +151,8 @@
 
       'include_dirs': [
         'src',
-        'deps/v8/include'
+        'deps/v8/include',
+        'deps/postject'
       ],
 
       'sources': [
@@ -449,6 +450,7 @@
 
       'include_dirs': [
         'src',
+        'deps/postject',
         '<(SHARED_INTERMEDIATE_DIR)' # for node_natives.h
       ],
       'dependencies': [
@@ -475,6 +477,7 @@
         'src/cleanup_queue.cc',
         'src/connect_wrap.cc',
         'src/connection_wrap.cc',
+        'src/dataqueue/queue.cc',
         'src/debug_utils.cc',
         'src/env.cc',
         'src/fs_event_wrap.cc',
@@ -523,6 +526,7 @@
         'src/node_report.cc',
         'src/node_report_module.cc',
         'src/node_report_utils.cc',
+        'src/node_sea.cc',
         'src/node_serdes.cc',
         'src/node_shadow_realm.cc',
         'src/node_snapshotable.cc',
@@ -577,6 +581,7 @@
         'src/cleanup_queue-inl.h',
         'src/connect_wrap.h',
         'src/connection_wrap.h',
+        'src/dataqueue/queue.h',
         'src/debug_utils.h',
         'src/debug_utils-inl.h',
         'src/env_properties.h',
@@ -633,6 +638,7 @@
         'src/node_report.h',
         'src/node_revert.h',
         'src/node_root_certs.h',
+        'src/node_sea.h',
         'src/node_shadow_realm.h',
         'src/node_snapshotable.h',
         'src/node_snapshot_builder.h',
@@ -675,6 +681,7 @@
         'src/util-inl.h',
         # Dependency headers
         'deps/v8/include/v8.h',
+        'deps/postject/postject-api.h'
         # javascript files to make for an even more pleasant IDE experience
         '<@(library_files)',
         '<@(deps_files)',
@@ -986,6 +993,7 @@
         'test/cctest/test_sockaddr.cc',
         'test/cctest/test_traced_value.cc',
         'test/cctest/test_util.cc',
+        'test/cctest/test_dataqueue.cc',
       ],
 
       'conditions': [

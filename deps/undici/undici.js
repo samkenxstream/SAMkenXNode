@@ -296,6 +296,7 @@ var require_util = __commonJS({
     var { Blob } = require("buffer");
     var nodeUtil = require("util");
     var { stringify } = require("querystring");
+    var [nodeMajor, nodeMinor] = process.versions.node.split(".").map((v) => Number(v));
     function nop() {
     }
     function isStream(obj) {
@@ -438,24 +439,32 @@ var require_util = __commonJS({
       for (let i = 0; i < headers.length; i += 2) {
         const key = headers[i].toString().toLowerCase();
         let val = obj[key];
+        const encoding = key.length === 19 && key === "content-disposition" ? "latin1" : "utf8";
         if (!val) {
           if (Array.isArray(headers[i + 1])) {
             obj[key] = headers[i + 1];
           } else {
-            obj[key] = headers[i + 1].toString();
+            obj[key] = headers[i + 1].toString(encoding);
           }
         } else {
           if (!Array.isArray(val)) {
             val = [val];
             obj[key] = val;
           }
-          val.push(headers[i + 1].toString());
+          val.push(headers[i + 1].toString(encoding));
         }
       }
       return obj;
     }
     function parseRawHeaders(headers) {
-      return headers.map((header) => header.toString());
+      const ret = [];
+      for (let n = 0; n < headers.length; n += 2) {
+        const key = headers[n + 0].toString();
+        const encoding = key.length === 19 && key.toLowerCase() === "content-disposition" ? "latin1" : "utf8";
+        const val = headers[n + 1].toString(encoding);
+        ret.push(key, val);
+      }
+      return ret;
     }
     function isBuffer(buffer) {
       return buffer instanceof Uint8Array || Buffer.isBuffer(buffer);
@@ -572,7 +581,10 @@ var require_util = __commonJS({
       validateHandler,
       getSocketInfo,
       isFormDataLike,
-      buildURL
+      buildURL,
+      nodeMajor,
+      nodeMinor,
+      nodeHasAutoSelectFamily: nodeMajor > 18 || nodeMajor === 18 && nodeMinor >= 13
     };
   }
 });
@@ -1607,10 +1619,14 @@ var require_headers = __commonJS({
       isValidHeaderValue
     } = require_util2();
     var { webidl } = require_webidl();
+    var assert = require("assert");
     var kHeadersMap = Symbol("headers map");
     var kHeadersSortedMap = Symbol("headers map sorted");
     function headerValueNormalize(potentialValue) {
-      return potentialValue.replace(/^[\r\n\t ]+|[\r\n\t ]+$/g, "");
+      let i = potentialValue.length;
+      while (/[\r\n\t ]/.test(potentialValue.charAt(--i)))
+        ;
+      return potentialValue.slice(0, i + 1).replace(/^[\r\n\t ]+/, "");
     }
     function fill(headers, object) {
       if (Array.isArray(object)) {
@@ -1641,6 +1657,7 @@ var require_headers = __commonJS({
         if (init instanceof HeadersList) {
           this[kHeadersMap] = new Map(init[kHeadersMap]);
           this[kHeadersSortedMap] = init[kHeadersSortedMap];
+          this.cookies = init.cookies;
         } else {
           this[kHeadersMap] = new Map(init);
           this[kHeadersSortedMap] = null;
@@ -1669,14 +1686,14 @@ var require_headers = __commonJS({
         }
         if (lowercaseName === "set-cookie") {
           this.cookies ??= [];
-          this.cookies.push([name, value]);
+          this.cookies.push(value);
         }
       }
       set(name, value) {
         this[kHeadersSortedMap] = null;
         const lowercaseName = name.toLowerCase();
         if (lowercaseName === "set-cookie") {
-          this.cookies = [[name, value]];
+          this.cookies = [value];
         }
         return this[kHeadersMap].set(lowercaseName, { name, value });
       }
@@ -1812,23 +1829,45 @@ var require_headers = __commonJS({
         }
         return this[kHeadersList].set(name, value);
       }
-      get [kHeadersSortedMap]() {
-        if (!this[kHeadersList][kHeadersSortedMap]) {
-          this[kHeadersList][kHeadersSortedMap] = new Map([...this[kHeadersList]].sort((a, b) => a[0] < b[0] ? -1 : 1));
+      getSetCookie() {
+        webidl.brandCheck(this, Headers);
+        const list = this[kHeadersList].cookies;
+        if (list) {
+          return [...list];
         }
-        return this[kHeadersList][kHeadersSortedMap];
+        return [];
+      }
+      get [kHeadersSortedMap]() {
+        if (this[kHeadersList][kHeadersSortedMap]) {
+          return this[kHeadersList][kHeadersSortedMap];
+        }
+        const headers = [];
+        const names = [...this[kHeadersList]].sort((a, b) => a[0] < b[0] ? -1 : 1);
+        const cookies = this[kHeadersList].cookies;
+        for (const [name, value] of names) {
+          if (name === "set-cookie") {
+            for (const value2 of cookies) {
+              headers.push([name, value2]);
+            }
+          } else {
+            assert(value !== null);
+            headers.push([name, value]);
+          }
+        }
+        this[kHeadersList][kHeadersSortedMap] = headers;
+        return headers;
       }
       keys() {
         webidl.brandCheck(this, Headers);
-        return makeIterator(() => [...this[kHeadersSortedMap].entries()], "Headers", "key");
+        return makeIterator(() => [...this[kHeadersSortedMap].values()], "Headers", "key");
       }
       values() {
         webidl.brandCheck(this, Headers);
-        return makeIterator(() => [...this[kHeadersSortedMap].entries()], "Headers", "value");
+        return makeIterator(() => [...this[kHeadersSortedMap].values()], "Headers", "value");
       }
       entries() {
         webidl.brandCheck(this, Headers);
-        return makeIterator(() => [...this[kHeadersSortedMap].entries()], "Headers", "key+value");
+        return makeIterator(() => [...this[kHeadersSortedMap].values()], "Headers", "key+value");
       }
       forEach(callbackFn, thisArg = globalThis) {
         webidl.brandCheck(this, Headers);
@@ -5783,6 +5822,7 @@ var require_dataURL = __commonJS({
       dataURLProcessor,
       URLSerializer,
       collectASequenceOfCodePoints,
+      collectASequenceOfCodePointsFast,
       stringPercentDecode,
       parseMIMEType,
       collectAnHTTPQuotedString,
@@ -6933,6 +6973,7 @@ var require_request = __commonJS({
     var { URLSerializer } = require_dataURL();
     var { kHeadersList } = require_symbols();
     var assert = require("assert");
+    var { setMaxListeners, getEventListeners, defaultMaxListeners } = require("events");
     var TransformStream = globalThis.TransformStream;
     var kInit = Symbol("init");
     var requestFinalizer = new FinalizationRegistry(({ signal, abort }) => {
@@ -7094,6 +7135,9 @@ var require_request = __commonJS({
             const abort = function() {
               acRef.deref()?.abort(this.reason);
             };
+            if (getEventListeners(signal, "abort").length >= defaultMaxListeners) {
+              setMaxListeners(100, signal);
+            }
             signal.addEventListener("abort", abort, { once: true });
             requestFinalizer.register(this, { signal, abort });
           }
@@ -7940,9 +7984,6 @@ var require_request2 = __commonJS({
     var kHandler = Symbol("handler");
     var channels = {};
     var extractBody;
-    var nodeVersion = process.versions.node.split(".");
-    var nodeMajor = Number(nodeVersion[0]);
-    var nodeMinor = Number(nodeVersion[1]);
     try {
       const diagnosticsChannel = require("diagnostics_channel");
       channels.create = diagnosticsChannel.channel("undici:request:create");
@@ -8046,7 +8087,7 @@ var require_request2 = __commonJS({
           throw new InvalidArgumentError("headers must be an object or an array");
         }
         if (util.isFormDataLike(this.body)) {
-          if (nodeMajor < 16 || nodeMajor === 16 && nodeMinor < 8) {
+          if (util.nodeMajor < 16 || util.nodeMajor === 16 && util.nodeMinor < 8) {
             throw new InvalidArgumentError("Form-Data bodies are only supported in node v16.8 and newer.");
           }
           if (!extractBody) {
@@ -8149,6 +8190,9 @@ var require_request2 = __commonJS({
         return;
       }
       if (request.host === null && key.length === 4 && key.toLowerCase() === "host") {
+        if (headerCharRegex.exec(val) !== null) {
+          throw new InvalidArgumentError(`invalid ${key} header`);
+        }
         request.host = val;
       } else if (request.contentLength === null && key.length === 14 && key.toLowerCase() === "content-length") {
         request.contentLength = parseInt(val, 10);
@@ -8961,7 +9005,9 @@ var require_client = __commonJS({
         connect: connect2,
         maxRequestsPerClient,
         localAddress,
-        maxResponseSize
+        maxResponseSize,
+        autoSelectFamily,
+        autoSelectFamilyAttemptTimeout
       } = {}) {
         super();
         if (keepAlive !== void 0) {
@@ -9018,12 +9064,16 @@ var require_client = __commonJS({
         if (maxResponseSize != null && (!Number.isInteger(maxResponseSize) || maxResponseSize < -1)) {
           throw new InvalidArgumentError("maxResponseSize must be a positive number");
         }
+        if (autoSelectFamilyAttemptTimeout != null && (!Number.isInteger(autoSelectFamilyAttemptTimeout) || autoSelectFamilyAttemptTimeout < -1)) {
+          throw new InvalidArgumentError("autoSelectFamilyAttemptTimeout must be a positive number");
+        }
         if (typeof connect2 !== "function") {
           connect2 = buildConnector({
             ...tls,
             maxCachedSessions,
             socketPath,
             timeout: connectTimeout,
+            ...util.nodeHasAutoSelectFamily && autoSelectFamily ? { autoSelectFamily, autoSelectFamilyAttemptTimeout } : void 0,
             ...connect2
           });
         }
@@ -9043,8 +9093,8 @@ var require_client = __commonJS({
         this[kNeedDrain] = 0;
         this[kHostHeader] = `host: ${this[kUrl].hostname}${this[kUrl].port ? `:${this[kUrl].port}` : ""}\r
 `;
-        this[kBodyTimeout] = bodyTimeout != null ? bodyTimeout : 3e4;
-        this[kHeadersTimeout] = headersTimeout != null ? headersTimeout : 3e4;
+        this[kBodyTimeout] = bodyTimeout != null ? bodyTimeout : 3e5;
+        this[kHeadersTimeout] = headersTimeout != null ? headersTimeout : 3e5;
         this[kStrictContentLength] = strictContentLength == null ? true : strictContentLength;
         this[kMaxRedirections] = maxRedirections;
         this[kMaxRequests] = maxRequestsPerClient;
@@ -10210,6 +10260,8 @@ var require_pool = __commonJS({
         tls,
         maxCachedSessions,
         socketPath,
+        autoSelectFamily,
+        autoSelectFamilyAttemptTimeout,
         ...options
       } = {}) {
         super();
@@ -10228,6 +10280,7 @@ var require_pool = __commonJS({
             maxCachedSessions,
             socketPath,
             timeout: connectTimeout == null ? 1e4 : connectTimeout,
+            ...util.nodeHasAutoSelectFamily && autoSelectFamily ? { autoSelectFamily, autoSelectFamilyAttemptTimeout } : void 0,
             ...connect
           });
         }
@@ -10455,7 +10508,7 @@ var require_fetch = __commonJS({
     var { kHeadersList } = require_symbols();
     var EE = require("events");
     var { Readable, pipeline } = require("stream");
-    var { isErrored, isReadable } = require_util();
+    var { isErrored, isReadable, nodeMajor, nodeMinor } = require_util();
     var { dataURLProcessor, serializeAMimeType } = require_dataURL();
     var { TransformStream } = require("stream/web");
     var { getGlobalDispatcher } = require_global2();
@@ -10463,9 +10516,6 @@ var require_fetch = __commonJS({
     var { STATUS_CODES } = require("http");
     var resolveObjectURL;
     var ReadableStream = globalThis.ReadableStream;
-    var nodeVersion = process.versions.node.split(".");
-    var nodeMajor = Number(nodeVersion[0]);
-    var nodeMinor = Number(nodeVersion[1]);
     var Fetch = class extends EE {
       constructor(dispatcher) {
         super();
