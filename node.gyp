@@ -61,7 +61,7 @@
       [ 'node_shared=="true"', {
         'node_target_type%': 'shared_library',
         'conditions': [
-          ['OS=="aix"', {
+          ['OS in "aix os400"', {
             # For AIX, always generate static library first,
             # It needs an extra step to generate exp and
             # then use both static lib and exp to create
@@ -110,7 +110,7 @@
     },
 
     'conditions': [
-      ['OS=="aix"', {
+      ['OS in "aix os400"', {
         'ldflags': [
           '-Wl,-bnoerrmsg',
         ],
@@ -192,7 +192,7 @@
           },
         }],
         [ 'node_intermediate_lib_type=="static_library" and '
-            'node_shared=="true" and OS=="aix"', {
+            'node_shared=="true" and OS in "aix os400"', {
           # For AIX, shared lib is linked by static lib and .exp. In the
           # case here, the executable needs to link to shared lib.
           # Therefore, use 'node_aix_shared' target to generate the
@@ -227,7 +227,7 @@
             },
           },
           'conditions': [
-            ['OS != "aix" and OS != "mac" and OS != "ios"', {
+            ['OS != "aix" and OS != "os400" and OS != "mac" and OS != "ios"', {
               'ldflags': [
                 '-Wl,--whole-archive',
                 '<(obj_dir)/<(STATIC_LIB_PREFIX)<(node_core_target_name)<(STATIC_LIB_SUFFIX)',
@@ -544,6 +544,10 @@
         'src/node_watchdog.cc',
         'src/node_worker.cc',
         'src/node_zlib.cc',
+        'src/permission/child_process_permission.cc',
+        'src/permission/fs_permission.cc',
+        'src/permission/permission.cc',
+        'src/permission/worker_permission.cc',
         'src/pipe_wrap.cc',
         'src/process_wrap.cc',
         'src/signal_wrap.cc',
@@ -573,6 +577,7 @@
         'src/async_wrap-inl.h',
         'src/base_object.h',
         'src/base_object-inl.h',
+        'src/base_object_types.h',
         'src/base64.h',
         'src/base64-inl.h',
         'src/callback_queue.h',
@@ -654,6 +659,11 @@
         'src/node_wasi.h',
         'src/node_watchdog.h',
         'src/node_worker.h',
+        'src/permission/child_process_permission.h',
+        'src/permission/fs_permission.h',
+        'src/permission/permission.h',
+        'src/permission/permission_node.h',
+        'src/permission/worker_permission.h',
         'src/pipe_wrap.h',
         'src/req_wrap.h',
         'src/req_wrap-inl.h',
@@ -741,7 +751,7 @@
             'NODE_USE_NODE_CODE_CACHE=1',
           ],
         }],
-        ['node_shared=="true" and OS=="aix"', {
+        ['node_shared=="true" and OS in "aix os400"', {
           'product_name': 'node_base',
         }],
         [ 'v8_enable_inspector==1', {
@@ -1170,7 +1180,7 @@
   ], # end targets
 
   'conditions': [
-    ['OS=="aix" and node_shared=="true"', {
+    ['OS in "aix os400" and node_shared=="true"', {
       'targets': [
         {
           'target_name': 'node_aix_shared',

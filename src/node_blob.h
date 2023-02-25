@@ -111,15 +111,13 @@ class Blob : public BaseObject {
 
 class BlobBindingData : public SnapshotableObject {
  public:
-  explicit BlobBindingData(Environment* env, v8::Local<v8::Object> wrap);
+  explicit BlobBindingData(Realm* realm, v8::Local<v8::Object> wrap);
 
   using InternalFieldInfo = InternalFieldInfoBase;
 
   SERIALIZABLE_OBJECT_METHODS()
 
-  static constexpr FastStringKey type_name{"node::BlobBindingData"};
-  static constexpr EmbedderObjectType type_int =
-      EmbedderObjectType::k_blob_binding_data;
+  SET_BINDING_ID(blob_binding_data)
 
   void MemoryInfo(MemoryTracker* tracker) const override;
   SET_SELF_SIZE(BlobBindingData)

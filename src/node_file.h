@@ -57,7 +57,7 @@ constexpr size_t kFsStatFsBufferLength =
 
 class BindingData : public SnapshotableObject {
  public:
-  explicit BindingData(Environment* env, v8::Local<v8::Object> wrap);
+  explicit BindingData(Realm* realm, v8::Local<v8::Object> wrap);
 
   AliasedFloat64Array stats_field_array;
   AliasedBigInt64Array stats_field_bigint_array;
@@ -70,9 +70,7 @@ class BindingData : public SnapshotableObject {
 
   using InternalFieldInfo = InternalFieldInfoBase;
   SERIALIZABLE_OBJECT_METHODS()
-  static constexpr FastStringKey type_name{"node::fs::BindingData"};
-  static constexpr EmbedderObjectType type_int =
-      EmbedderObjectType::k_fs_binding_data;
+  SET_BINDING_ID(fs_binding_data)
 
   void MemoryInfo(MemoryTracker* tracker) const override;
   SET_SELF_SIZE(BindingData)
