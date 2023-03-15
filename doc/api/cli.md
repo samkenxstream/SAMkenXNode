@@ -601,7 +601,9 @@ Use this flag to enable [ShadowRealm][] support.
 ### `--experimental-test-coverage`
 
 <!-- YAML
-added: v19.7.0
+added:
+  - v19.7.0
+  - v18.15.0
 -->
 
 When used in conjunction with the `node:test` module, a code coverage report is
@@ -1394,6 +1396,9 @@ added:
   - v18.1.0
   - v16.17.0
 changes:
+  - version: REPLACEME
+    pr-url: https://github.com/nodejs/node/pull/46983
+    description: The test runner is now stable.
   - version:
       - v19.2.0
       - v18.13.0
@@ -1410,6 +1415,10 @@ for more details.
 
 <!-- YAML
 added: v18.11.0
+changes:
+  - version: REPLACEME
+    pr-url: https://github.com/nodejs/node/pull/46983
+    description: The test runner is now stable.
 -->
 
 A regular expression that configures the test runner to only execute tests
@@ -1419,7 +1428,13 @@ whose name matches the provided pattern. See the documentation on
 ### `--test-reporter`
 
 <!-- YAML
-added: v19.6.0
+added:
+  - v19.6.0
+  - v18.15.0
+changes:
+  - version: REPLACEME
+    pr-url: https://github.com/nodejs/node/pull/46983
+    description: The test runner is now stable.
 -->
 
 A test reporter to use when running tests. See the documentation on
@@ -1428,7 +1443,13 @@ A test reporter to use when running tests. See the documentation on
 ### `--test-reporter-destination`
 
 <!-- YAML
-added: v19.6.0
+added:
+  - v19.6.0
+  - v18.15.0
+changes:
+  - version: REPLACEME
+    pr-url: https://github.com/nodejs/node/pull/46983
+    description: The test runner is now stable.
 -->
 
 The destination for the corresponding test reporter. See the documentation on
@@ -1440,6 +1461,10 @@ The destination for the corresponding test reporter. See the documentation on
 added:
   - v18.0.0
   - v16.17.0
+changes:
+  - version: REPLACEME
+    pr-url: https://github.com/nodejs/node/pull/46983
+    description: The test runner is now stable.
 -->
 
 Configures the test runner to only execute top level tests that have the `only`
@@ -2119,6 +2144,8 @@ Node.js options that are allowed are:
 * `--secure-heap`
 * `--snapshot-blob`
 * `--test-only`
+* `--test-reporter-destination`
+* `--test-reporter`
 * `--throw-deprecation`
 * `--title`
 * `--tls-cipher-list`
@@ -2259,6 +2286,11 @@ added: v14.5.0
 If `value` equals `'1'`, the check for a supported platform is skipped during
 Node.js startup. Node.js might not execute correctly. Any issues encountered
 on unsupported platforms will not be fixed.
+
+### `NODE_TEST_CONTEXT=value`
+
+If `value` equals `'child'`, test reporter options will be overridden and test
+output will be sent to stdout in the TAP format.
 
 ### `NODE_TLS_REJECT_UNAUTHORIZED=value`
 

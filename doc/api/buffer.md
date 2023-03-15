@@ -1061,7 +1061,7 @@ console.log(bufA.length);
 ### Static method: `Buffer.copyBytesFrom(view[, offset[, length]])`
 
 <!-- YAML
-added: REPLACEME
+added: v19.8.0
 -->
 
 * `view` {TypedArray} The {TypedArray} to copy.
@@ -5163,7 +5163,9 @@ and binary data should be performed using `Buffer.from(str, 'base64')` and
 ### `buffer.isAscii(input)`
 
 <!-- YAML
-added: v19.6.0
+added:
+  - v19.6.0
+  - v18.15.0
 -->
 
 * input {Buffer | ArrayBuffer | TypedArray} The input to validate.
