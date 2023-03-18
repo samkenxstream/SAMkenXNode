@@ -20,7 +20,6 @@
 #define PER_ISOLATE_PRIVATE_SYMBOL_PROPERTIES(V)                               \
   V(arrow_message_private_symbol, "node:arrowMessage")                         \
   V(contextify_context_private_symbol, "node:contextify:context")              \
-  V(compiled_function_entry, "node:compiled_function_entry")                   \
   V(decorated_private_symbol, "node:decorated")                                \
   V(napi_type_tag, "node:napi:type_tag")                                       \
   V(napi_wrapper, "node:napi:wrapper")                                         \
@@ -136,6 +135,7 @@
   V(frames_received_string, "framesReceived")                                  \
   V(frames_sent_string, "framesSent")                                          \
   V(function_string, "function")                                               \
+  V(get_string, "get")                                                         \
   V(get_data_clone_error_string, "_getDataCloneError")                         \
   V(get_shared_array_buffer_id_string, "_getSharedArrayBufferId")              \
   V(gid_string, "gid")                                                         \
@@ -271,6 +271,7 @@
   V(servername_string, "servername")                                           \
   V(service_string, "service")                                                 \
   V(session_id_string, "sessionId")                                            \
+  V(set_string, "set")                                                         \
   V(shell_string, "shell")                                                     \
   V(signal_string, "signal")                                                   \
   V(sink_string, "sink")                                                       \
@@ -415,7 +416,6 @@
   V(message_port, v8::Object)                                                  \
   V(builtin_module_require, v8::Function)                                      \
   V(performance_entry_callback, v8::Function)                                  \
-  V(performance_entry_template, v8::Function)                                  \
   V(prepare_stack_trace_callback, v8::Function)                                \
   V(process_object, v8::Object)                                                \
   V(primordials, v8::Object)                                                   \

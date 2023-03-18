@@ -77,6 +77,7 @@ using v8::Uint32;
 using v8::UnboundScript;
 using v8::Value;
 using v8::WeakCallbackInfo;
+using v8::WeakCallbackType;
 
 // The vm module executes code in a sandboxed environment with a different
 // global object than the rest of the code. This is achieved by applying
@@ -526,9 +527,21 @@ void ContextifyContext::PropertySetterCallback(
       !is_function)
     return;
 
-  USE(ctx->sandbox()->Set(context, property, value));
-  if (is_contextual_store || is_function) {
-    args.GetReturnValue().Set(value);
+  if (ctx->sandbox()->Set(context, property, value).IsNothing()) return;
+
+  Local<Value> desc;
+  if (is_declared_on_sandbox &&
+      ctx->sandbox()
+          ->GetOwnPropertyDescriptor(context, property)
+          .ToLocal(&desc)) {
+    Environment* env = Environment::GetCurrent(context);
+    Local<Object> desc_obj = desc.As<Object>();
+
+    // We have to specify the return value for any contextual or get/set
+    // property
+    if (desc_obj->HasOwnProperty(context, env->get_string()).FromMaybe(false) ||
+        desc_obj->HasOwnProperty(context, env->set_string()).FromMaybe(false))
+      args.GetReturnValue().Set(value);
   }
 }
 
@@ -1262,7 +1275,8 @@ void ContextifyContext::CompileFunction(
            context).ToLocal(&cache_key)) {
     return;
   }
-  new CompiledFnEntry(env, cache_key, id, fn);
+  CompiledFnEntry* entry = new CompiledFnEntry(env, cache_key, id, fn);
+  env->id_to_function_map.emplace(id, entry);
 
   Local<Object> result = Object::New(isolate);
   if (result->Set(parsing_context, env->function_string(), fn).IsNothing())
@@ -1294,18 +1308,23 @@ void ContextifyContext::CompileFunction(
   args.GetReturnValue().Set(result);
 }
 
+void CompiledFnEntry::WeakCallback(
+    const WeakCallbackInfo<CompiledFnEntry>& data) {
+  CompiledFnEntry* entry = data.GetParameter();
+  delete entry;
+}
+
 CompiledFnEntry::CompiledFnEntry(Environment* env,
                                  Local<Object> object,
                                  uint32_t id,
                                  Local<Function> fn)
-    : BaseObject(env, object), id_(id) {
-  MakeWeak();
-  fn->SetPrivate(env->context(), env->compiled_function_entry(), object);
-  env->id_to_function_map.emplace(id, this);
+    : BaseObject(env, object), id_(id), fn_(env->isolate(), fn) {
+  fn_.SetWeak(this, WeakCallback, v8::WeakCallbackType::kParameter);
 }
 
 CompiledFnEntry::~CompiledFnEntry() {
   env()->id_to_function_map.erase(id_);
+  fn_.ClearWeak();
 }
 
 static void StartSigintWatchdog(const FunctionCallbackInfo<Value>& args) {
