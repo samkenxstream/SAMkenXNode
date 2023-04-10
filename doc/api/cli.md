@@ -462,14 +462,20 @@ added: v6.0.0
 Enable FIPS-compliant crypto at startup. (Requires Node.js to be built
 against FIPS-compatible OpenSSL.)
 
-### `--enable-network-family-autoselection`
+### `--no-network-family-autoselection`
 
 <!-- YAML
 added: v19.4.0
+changes:
+  - version: REPLACEME
+    pr-url: https://github.com/nodejs/node/pull/46790
+    description: The flag was renamed from `--no-enable-network-family-autoselection`
+                 to `--no-network-family-autoselection`. The old name can still work as
+                 an alias.
 -->
 
-Enables the family autoselection algorithm unless connection options explicitly
-disables it.
+Disables the family autoselection algorithm unless connection options explicitly
+enables it.
 
 ### `--enable-source-maps`
 
@@ -587,6 +593,18 @@ added: v16.6.0
 -->
 
 Use this flag to disable top-level await in REPL.
+
+### `--experimental-sea-config`
+
+<!-- YAML
+added: REPLACEME
+-->
+
+> Stability: 1 - Experimental
+
+Use this flag to generate a blob that can be injected into the Node.js
+binary to produce a [single executable application][]. See the documentation
+about [this configuration][`--experimental-sea-config`] for details.
 
 ### `--experimental-shadow-realm`
 
@@ -2125,6 +2143,7 @@ Node.js options that are allowed are:
 * `--no-extra-info-on-fatal-exception`
 * `--no-force-async-hooks-checks`
 * `--no-global-search-paths`
+* `--no-network-family-autoselection`
 * `--no-warnings`
 * `--node-memory-debug`
 * `--openssl-config`
@@ -2549,6 +2568,7 @@ done
 [`"type"`]: packages.md#type
 [`--cpu-prof-dir`]: #--cpu-prof-dir
 [`--diagnostic-dir`]: #--diagnostic-dirdirectory
+[`--experimental-sea-config`]: single-executable-applications.md#generating-single-executable-preparation-blobs
 [`--experimental-wasm-modules`]: #--experimental-wasm-modules
 [`--heap-prof-dir`]: #--heap-prof-dir
 [`--import`]: #--importmodule
@@ -2587,6 +2607,7 @@ done
 [scavenge garbage collector]: https://v8.dev/blog/orinoco-parallel-scavenger
 [security warning]: #warning-binding-inspector-to-a-public-ipport-combination-is-insecure
 [semi-space]: https://www.memorymanagement.org/glossary/s.html#semi.space
+[single executable application]: single-executable-applications.md
 [test reporters]: test.md#test-reporters
 [timezone IDs]: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
 [tracking issue for user-land snapshots]: https://github.com/nodejs/node/issues/44014

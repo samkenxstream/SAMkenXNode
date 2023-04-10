@@ -82,6 +82,8 @@
       'src/js_stream.cc',
       'src/json_utils.cc',
       'src/js_udp_wrap.cc',
+      'src/json_parser.h',
+      'src/json_parser.cc',
       'src/module_wrap.cc',
       'src/node.cc',
       'src/node_api.cc',
@@ -254,7 +256,6 @@
       'src/permission/child_process_permission.h',
       'src/permission/fs_permission.h',
       'src/permission/permission.h',
-      'src/permission/permission_node.h',
       'src/permission/worker_permission.h',
       'src/pipe_wrap.h',
       'src/req_wrap.h',
@@ -336,16 +337,22 @@
       'src/node_crypto.h',
     ],
     'node_quic_sources': [
+      'src/quic/bindingdata.cc',
       'src/quic/cid.cc',
       'src/quic/data.cc',
+      'src/quic/logstream.cc',
       'src/quic/preferredaddress.cc',
       'src/quic/sessionticket.cc',
       'src/quic/tokens.cc',
+      'src/quic/transportparams.cc',
+      'src/quic/bindingdata.h',
       'src/quic/cid.h',
       'src/quic/data.h',
+      'src/quic/logstream.h',
       'src/quic/preferredaddress.h',
       'src/quic/sessionticket.h',
       'src/quic/tokens.h',
+      'src/quic/transportparams.h',
     ],
     'node_mksnapshot_exec': '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)node_mksnapshot<(EXECUTABLE_SUFFIX)',
     'conditions': [
@@ -970,6 +977,10 @@
         [ 'OS!="linux" or ossfuzz!="true"', {
           'type': 'none',
         }],
+        # Avoid excessive LTO
+        ['enable_lto=="true"', {
+          'ldflags': [ '-fno-lto' ],
+        }],
       ],
     }, # fuzz_env
     {
@@ -1072,6 +1083,10 @@
             'Ws2_32.lib',
           ],
         }],
+        # Avoid excessive LTO
+        ['enable_lto=="true"', {
+          'ldflags': [ '-fno-lto' ],
+        }],
       ],
     }, # cctest
 
@@ -1125,6 +1140,10 @@
             'Ws2_32.lib',
           ],
         }],
+        # Avoid excessive LTO
+        ['enable_lto=="true"', {
+          'ldflags': [ '-fno-lto' ],
+        }],
       ],
     }, # embedtest
 
@@ -1142,6 +1161,10 @@
           'sources': [
             'test/overlapped-checker/main_unix.c'
           ],
+        }],
+        # Avoid excessive LTO
+        ['enable_lto=="true"', {
+          'ldflags': [ '-fno-lto' ],
         }],
       ]
     }, # overlapped-checker
@@ -1198,6 +1221,10 @@
             'winmm.lib',
             'Ws2_32.lib',
           ],
+        }],
+        # Avoid excessive LTO
+        ['enable_lto=="true"', {
+          'ldflags': [ '-fno-lto' ],
         }],
       ],
     }, # node_mksnapshot

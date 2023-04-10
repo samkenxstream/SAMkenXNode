@@ -84,7 +84,7 @@
 /doc/api/module.md @nodejs/modules @nodejs/loaders
 /doc/api/modules.md @nodejs/modules @nodejs/loaders
 /doc/api/packages.md @nodejs/modules @nodejs/loaders
-/lib/internal/bootstrap/loaders.js @nodejs/modules @nodejs/loaders
+/lib/internal/bootstrap/realm.js @nodejs/modules @nodejs/loaders
 /lib/internal/modules/* @nodejs/modules @nodejs/loaders
 /lib/internal/process/esm_loader.js @nodejs/modules @nodejs/loaders
 /lib/internal/process/execution.js @nodejs/modules @nodejs/loaders
@@ -117,6 +117,7 @@
 
 /benchmark/misc/startup.js @nodejs/startup
 /src/node.cc @nodejs/startup
+/src/node_realm* @nodejs/startup @nodejs/realm
 /src/node_builtins* @nodejs/startup
 /src/node_snapshot* @nodejs/startup
 /lib/internal/bootstrap/* @nodejs/startup
@@ -134,7 +135,6 @@
 
 # Test runner
 
-/test/message/test_runner_* @nodejs/test_runner
 /test/parallel/test-runner-* @nodejs/test_runner
 /doc/api/test.md @nodejs/test_runner
 /lib/test.js @nodejs/test_runner
