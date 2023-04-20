@@ -581,7 +581,7 @@ contained by the `Blob` is copied only when the `arrayBuffer()` or `text()`
 methods are called.
 
 ```mjs
-import { Blob, Buffer } from 'node:buffer';
+import { Blob } from 'node:buffer';
 import { setTimeout as delay } from 'node:timers/promises';
 
 const blob = new Blob(['hello there']);
@@ -608,7 +608,7 @@ blob.text().then(console.log);
 ```
 
 ```cjs
-const { Blob, Buffer } = require('node:buffer');
+const { Blob } = require('node:buffer');
 const { setTimeout: delay } = require('node:timers/promises');
 
 const blob = new Blob(['hello there']);
@@ -1061,7 +1061,9 @@ console.log(bufA.length);
 ### Static method: `Buffer.copyBytesFrom(view[, offset[, length]])`
 
 <!-- YAML
-added: v19.8.0
+added:
+ - v19.8.0
+ - v18.16.0
 -->
 
 * `view` {TypedArray} The {TypedArray} to copy.
@@ -1073,7 +1075,7 @@ Copies the underlying memory of `view` into a new `Buffer`.
 
 ```js
 const u16 = new Uint16Array([0, 0xffff]);
-const buf = Buffer.copyBytesFrom(u16, 0, 1);
+const buf = Buffer.copyBytesFrom(u16, 1, 1);
 u16[1] = 0;
 console.log(buf.length); // 2
 console.log(buf[0]); // 255
@@ -5055,7 +5057,7 @@ added:
   - v19.2.0
   - v18.13.0
 changes:
-  - version: REPLACEME
+  - version: v20.0.0
     pr-url: https://github.com/nodejs/node/pull/47153
     description: No longer experimental.
 -->
