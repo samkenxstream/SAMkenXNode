@@ -29,7 +29,7 @@ file a new issue.
     * [Running Coverage](#running-coverage)
     * [Building the documentation](#building-the-documentation)
     * [Building a debug build](#building-a-debug-build)
-    * [Building an ASAN build](#building-an-asan-build)
+    * [Building an ASan build](#building-an-asan-build)
     * [Speeding up frequent rebuilds when developing](#speeding-up-frequent-rebuilds-when-developing)
     * [Troubleshooting Unix and macOS builds](#troubleshooting-unix-and-macos-builds)
   * [Windows](#windows)
@@ -213,10 +213,9 @@ Supported platforms and toolchains change with each major version of Node.js.
 This document is only valid for the current major version of Node.js.
 Consult previous versions of this document for older versions of Node.js:
 
-* [Node.js 17](https://github.com/nodejs/node/blob/v17.x/BUILDING.md)
+* [Node.js 19](https://github.com/nodejs/node/blob/v19.x/BUILDING.md)
+* [Node.js 18](https://github.com/nodejs/node/blob/v18.x/BUILDING.md)
 * [Node.js 16](https://github.com/nodejs/node/blob/v16.x/BUILDING.md)
-* [Node.js 14](https://github.com/nodejs/node/blob/v14.x/BUILDING.md)
-* [Node.js 12](https://github.com/nodejs/node/blob/v12.x/BUILDING.md)
 
 ## Building Node.js on supported platforms
 
@@ -507,16 +506,16 @@ $ gdb /opt/node-debug/node core.node.8.1535359906
 $ backtrace
 ```
 
-#### Building an ASAN build
+#### Building an ASan build
 
-[ASAN](https://github.com/google/sanitizers) can help detect various memory
-related bugs. ASAN builds are currently only supported on linux.
+[ASan](https://github.com/google/sanitizers) can help detect various memory
+related bugs. ASan builds are currently only supported on linux.
 If you want to check it on Windows or macOS or you want a consistent toolchain
 on Linux, you can try [Docker](https://www.docker.com/products/docker-desktop)
 (using an image like `gengjiawen/node-build:2020-02-14`).
 
 The `--debug` is not necessary and will slow down build and testing, but it can
-show clear stacktrace if ASAN hits an issue.
+show clear stacktrace if ASan hits an issue.
 
 ```console
 $  ./configure --debug --enable-asan && make -j4

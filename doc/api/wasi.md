@@ -118,7 +118,7 @@ added:
  - v13.3.0
  - v12.16.0
 changes:
- - version: REPLACEME
+ - version: v20.1.0
    pr-url: https://github.com/nodejs/node/pull/47390
    description: default value of returnOnExit changed to true.
  - version: v20.0.0
@@ -141,7 +141,7 @@ changes:
     the real paths to those directories on the host machine.
   * `returnOnExit` {boolean} By default, when WASI applications call
     `__wasi_proc_exit()`  `wasi.start()` will return with the exit code
-    specified rather than terminatng the process. Setting this option to
+    specified rather than terminating the process. Setting this option to
     `false` will cause the Node.js process to exit with the specified
     exit code instead.  **Default:** `true`.
   * `stdin` {integer} The file descriptor used as standard input in the

@@ -966,7 +966,7 @@ try {
 <!-- YAML
 added: v16.7.0
 changes:
-  - version: REPLACEME
+  - version: v20.1.0
     pr-url: https://github.com/nodejs/node/pull/47084
     description: Accept an additional `mode` option to specify
                  the copy behavior as the `mode` argument of `fs.copyFile()`.
@@ -1220,6 +1220,9 @@ a colon, Node.js will open a file system stream, as described by
 <!-- YAML
 added: v12.12.0
 changes:
+  - version: v20.1.0
+    pr-url: https://github.com/nodejs/node/pull/41439
+    description: Added `recursive` option.
   - version:
      - v13.1.0
      - v12.16.0
@@ -1233,6 +1236,8 @@ changes:
   * `bufferSize` {number} Number of directory entries that are buffered
     internally when reading from the directory. Higher values lead to better
     performance but higher memory usage. **Default:** `32`
+  * `recursive` {boolean} Resolved `Dir` will be an {AsyncIterable}
+    containing all sub files and directories. **Default:** `false`
 * Returns: {Promise}  Fulfills with an {fs.Dir}.
 
 Asynchronously open a directory for iterative scanning. See the POSIX
@@ -1266,6 +1271,9 @@ closed after the iterator exits.
 <!-- YAML
 added: v10.0.0
 changes:
+  - version: v20.1.0
+    pr-url: https://github.com/nodejs/node/pull/41439
+    description: Added `recursive` option.
   - version: v10.11.0
     pr-url: https://github.com/nodejs/node/pull/22020
     description: New option `withFileTypes` was added.
@@ -1275,6 +1283,7 @@ changes:
 * `options` {string|Object}
   * `encoding` {string} **Default:** `'utf8'`
   * `withFileTypes` {boolean} **Default:** `false`
+  * `recursive` {boolean} **Default:** `false`
 * Returns: {Promise}  Fulfills with an array of the names of the files in
   the directory excluding `'.'` and `'..'`.
 
@@ -2292,7 +2301,7 @@ copyFile('source.txt', 'destination.txt', constants.COPYFILE_EXCL, callback);
 <!-- YAML
 added: v16.7.0
 changes:
-  - version: REPLACEME
+  - version: v20.1.0
     pr-url: https://github.com/nodejs/node/pull/47084
     description: Accept an additional `mode` option to specify
                  the copy behavior as the `mode` argument of `fs.copyFile()`.
@@ -3374,10 +3383,9 @@ added: v19.8.0
 Returns a {Blob} whose data is backed by the given file.
 
 The file must not be modified after the {Blob} is created. Any modifications
-will cause reading the {Blob} data to fail with a `DOMException`.
-error. Synchronous stat operations on the file when the `Blob` is created, and
-before each read in order to detect whether the file data has been modified
-on disk.
+will cause reading the {Blob} data to fail with a `DOMException` error.
+Synchronous stat operations on the file when the `Blob` is created, and before
+each read in order to detect whether the file data has been modified on disk.
 
 ```mjs
 import { openAsBlob } from 'node:fs';
@@ -3402,6 +3410,9 @@ const { openAsBlob } = require('node:fs');
 <!-- YAML
 added: v12.12.0
 changes:
+  - version: v20.1.0
+    pr-url: https://github.com/nodejs/node/pull/41439
+    description: Added `recursive` option.
   - version: v18.0.0
     pr-url: https://github.com/nodejs/node/pull/41678
     description: Passing an invalid callback to the `callback` argument
@@ -3420,6 +3431,7 @@ changes:
   * `bufferSize` {number} Number of directory entries that are buffered
     internally when reading from the directory. Higher values lead to better
     performance but higher memory usage. **Default:** `32`
+  * `recursive` {boolean} **Default:** `false`
 * `callback` {Function}
   * `err` {Error}
   * `dir` {fs.Dir}
@@ -3538,6 +3550,9 @@ above values.
 <!-- YAML
 added: v0.1.8
 changes:
+  - version: v20.1.0
+    pr-url: https://github.com/nodejs/node/pull/41439
+    description: Added `recursive` option.
   - version: v18.0.0
     pr-url: https://github.com/nodejs/node/pull/41678
     description: Passing an invalid callback to the `callback` argument
@@ -3567,6 +3582,7 @@ changes:
 * `options` {string|Object}
   * `encoding` {string} **Default:** `'utf8'`
   * `withFileTypes` {boolean} **Default:** `false`
+  * `recursive` {boolean} **Default:** `false`
 * `callback` {Function}
   * `err` {Error}
   * `files` {string\[]|Buffer\[]|fs.Dirent\[]}
@@ -4108,6 +4124,9 @@ Asynchronous stat(2). The callback gets two arguments `(err, stats)` where
 `stats` is an {fs.Stats} object.
 
 In case of an error, the `err.code` will be one of [Common System Errors][].
+
+[`fs.stat()`][] follows symbolic links. Use [`fs.lstat()`][] to look at the
+links themselves.
 
 Using `fs.stat()` to check for the existence of a file before calling
 `fs.open()`, `fs.readFile()`, or `fs.writeFile()` is not recommended.
@@ -5203,7 +5222,7 @@ copyFileSync('source.txt', 'destination.txt', constants.COPYFILE_EXCL);
 <!-- YAML
 added: v16.7.0
 changes:
-  - version: REPLACEME
+  - version: v20.1.0
     pr-url: https://github.com/nodejs/node/pull/47084
     description: Accept an additional `mode` option to specify
                  the copy behavior as the `mode` argument of `fs.copyFile()`.
@@ -5543,6 +5562,9 @@ object with an `encoding` property specifying the character encoding to use.
 <!-- YAML
 added: v12.12.0
 changes:
+  - version: v20.1.0
+    pr-url: https://github.com/nodejs/node/pull/41439
+    description: Added `recursive` option.
   - version:
      - v13.1.0
      - v12.16.0
@@ -5556,6 +5578,7 @@ changes:
   * `bufferSize` {number} Number of directory entries that are buffered
     internally when reading from the directory. Higher values lead to better
     performance but higher memory usage. **Default:** `32`
+  * `recursive` {boolean} **Default:** `false`
 * Returns: {fs.Dir}
 
 Synchronously open a directory. See opendir(3).
@@ -5599,6 +5622,9 @@ this API: [`fs.open()`][].
 <!-- YAML
 added: v0.1.21
 changes:
+  - version: v20.1.0
+    pr-url: https://github.com/nodejs/node/pull/41439
+    description: Added `recursive` option.
   - version: v10.10.0
     pr-url: https://github.com/nodejs/node/pull/22020
     description: New option `withFileTypes` was added.
@@ -5612,6 +5638,7 @@ changes:
 * `options` {string|Object}
   * `encoding` {string} **Default:** `'utf8'`
   * `withFileTypes` {boolean} **Default:** `false`
+  * `recursive` {boolean} **Default:** `false`
 * Returns: {string\[]|Buffer\[]|fs.Dirent\[]}
 
 Reads the contents of the directory.
@@ -6464,6 +6491,16 @@ added: v10.10.0
 The file name that this {fs.Dirent} object refers to. The type of this
 value is determined by the `options.encoding` passed to [`fs.readdir()`][] or
 [`fs.readdirSync()`][].
+
+#### `dirent.path`
+
+<!-- YAML
+added: v20.1.0
+-->
+
+* {string}
+
+The base path that this {fs.Dirent} object refers to.
 
 ### Class: `fs.FSWatcher`
 

@@ -191,6 +191,14 @@ jobs:
               cat temp-output
               tail -n1 temp-output | grep "NEW_VERSION=" >> "$GITHUB_ENV" || true
               rm temp-output
+          - id: minimatch
+            subsystem: deps
+            label: dependencies
+            run: |
+              ./tools/dep_updaters/update-minimatch.sh > temp-output
+              cat temp-output
+              tail -n1 temp-output | grep "NEW_VERSION=" >> "$GITHUB_ENV" || true
+              rm temp-output
           - id: root-certificates
             subsystem: crypto
             label: crypto, notable-change
@@ -270,3 +278,4 @@ jobs:
           commit-message: ${{ env.COMMIT_MSG }}
           labels: ${{ matrix.label }}
           title: '${{ matrix.subsystem }}: update ${{ matrix.id }} to ${{ env.NEW_VERSION }}'
+          update-pull-request-title-and-body: true

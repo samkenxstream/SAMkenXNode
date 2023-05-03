@@ -5,6 +5,7 @@
 #include "node_external_reference.h"
 #include "node_i18n.h"
 #include "util-inl.h"
+#include "v8-fast-api-calls.h"
 #include "v8.h"
 
 #include <cstdint>
@@ -14,13 +15,17 @@
 namespace node {
 namespace url {
 
+using v8::CFunction;
 using v8::Context;
+using v8::FastOneByteString;
 using v8::FunctionCallbackInfo;
+using v8::FunctionTemplate;
 using v8::HandleScope;
 using v8::Isolate;
 using v8::Local;
 using v8::NewStringType;
 using v8::Object;
+using v8::ObjectTemplate;
 using v8::String;
 using v8::Value;
 
@@ -113,7 +118,6 @@ void BindingData::DomainToUnicode(const FunctionCallbackInfo<Value>& args) {
                                 .ToLocalChecked());
 }
 
-// TODO(@anonrig): Add V8 Fast API for CanParse method
 void BindingData::CanParse(const FunctionCallbackInfo<Value>& args) {
   CHECK_GE(args.Length(), 1);
   CHECK(args[0]->IsString());  // input
@@ -140,6 +144,17 @@ void BindingData::CanParse(const FunctionCallbackInfo<Value>& args) {
   args.GetReturnValue().Set(out.has_value());
 }
 
+bool BindingData::FastCanParse(Local<Value> receiver,
+                               const FastOneByteString& input) {
+  std::string_view input_view(input.data, input.length);
+
+  auto output = ada::parse<ada::url_aggregator>(input_view);
+
+  return output.has_value();
+}
+
+CFunction BindingData::fast_can_parse_(CFunction::Make(FastCanParse));
+
 void BindingData::Format(const FunctionCallbackInfo<Value>& args) {
   CHECK_GT(args.Length(), 4);
   CHECK(args[0]->IsString());  // url href
@@ -148,7 +163,7 @@ void BindingData::Format(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = env->isolate();
 
   Utf8Value href(isolate, args[0].As<String>());
-  const bool fragment = args[1]->IsTrue();
+  const bool hash = args[1]->IsTrue();
   const bool unicode = args[2]->IsTrue();
   const bool search = args[3]->IsTrue();
   const bool auth = args[4]->IsTrue();
@@ -159,8 +174,8 @@ void BindingData::Format(const FunctionCallbackInfo<Value>& args) {
   auto out = ada::parse<ada::url>(href.ToStringView());
   CHECK(out);
 
-  if (!fragment) {
-    out->fragment = std::nullopt;
+  if (!hash) {
+    out->hash = std::nullopt;
   }
 
   if (unicode) {
@@ -309,31 +324,37 @@ void BindingData::UpdateComponents(const ada::url_components& components,
                 "kURLComponentsLength should be up-to-date");
 }
 
-void BindingData::Initialize(Local<Object> target,
-                             Local<Value> unused,
-                             Local<Context> context,
-                             void* priv) {
-  Realm* realm = Realm::GetCurrent(context);
-  BindingData* const binding_data =
-      realm->AddBindingData<BindingData>(context, target);
-  if (binding_data == nullptr) return;
+void BindingData::CreatePerIsolateProperties(IsolateData* isolate_data,
+                                             Local<FunctionTemplate> ctor) {
+  Isolate* isolate = isolate_data->isolate();
+  Local<ObjectTemplate> target = ctor->InstanceTemplate();
+  SetMethodNoSideEffect(isolate, target, "domainToASCII", DomainToASCII);
+  SetMethodNoSideEffect(isolate, target, "domainToUnicode", DomainToUnicode);
+  SetMethodNoSideEffect(isolate, target, "format", Format);
+  SetMethod(isolate, target, "parse", Parse);
+  SetMethod(isolate, target, "update", Update);
+  SetFastMethodNoSideEffect(
+      isolate, target, "canParse", CanParse, &fast_can_parse_);
+}
 
-  SetMethodNoSideEffect(context, target, "domainToASCII", DomainToASCII);
-  SetMethodNoSideEffect(context, target, "domainToUnicode", DomainToUnicode);
-  SetMethodNoSideEffect(context, target, "canParse", CanParse);
-  SetMethodNoSideEffect(context, target, "format", Format);
-  SetMethod(context, target, "parse", Parse);
-  SetMethod(context, target, "update", Update);
+void BindingData::CreatePerContextProperties(Local<Object> target,
+                                             Local<Value> unused,
+                                             Local<Context> context,
+                                             void* priv) {
+  Realm* realm = Realm::GetCurrent(context);
+  realm->AddBindingData<BindingData>(context, target);
 }
 
 void BindingData::RegisterExternalReferences(
     ExternalReferenceRegistry* registry) {
   registry->Register(DomainToASCII);
   registry->Register(DomainToUnicode);
-  registry->Register(CanParse);
   registry->Register(Format);
   registry->Register(Parse);
   registry->Register(Update);
+  registry->Register(CanParse);
+  registry->Register(FastCanParse);
+  registry->Register(fast_can_parse_.GetTypeInfo());
 }
 
 std::string FromFilePath(const std::string_view file_path) {
@@ -349,6 +370,9 @@ std::string FromFilePath(const std::string_view file_path) {
 
 }  // namespace node
 
-NODE_BINDING_CONTEXT_AWARE_INTERNAL(url, node::url::BindingData::Initialize)
+NODE_BINDING_CONTEXT_AWARE_INTERNAL(
+    url, node::url::BindingData::CreatePerContextProperties)
+NODE_BINDING_PER_ISOLATE_INIT(
+    url, node::url::BindingData::CreatePerIsolateProperties)
 NODE_BINDING_EXTERNAL_REFERENCE(
     url, node::url::BindingData::RegisterExternalReferences)
