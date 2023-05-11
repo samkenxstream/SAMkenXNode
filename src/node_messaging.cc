@@ -31,6 +31,7 @@ using v8::MaybeLocal;
 using v8::Nothing;
 using v8::Object;
 using v8::SharedArrayBuffer;
+using v8::SharedValueConveyor;
 using v8::String;
 using v8::Symbol;
 using v8::Value;
@@ -92,10 +93,12 @@ class DeserializerDelegate : public ValueDeserializer::Delegate {
       Environment* env,
       const std::vector<BaseObjectPtr<BaseObject>>& host_objects,
       const std::vector<Local<SharedArrayBuffer>>& shared_array_buffers,
-      const std::vector<CompiledWasmModule>& wasm_modules)
+      const std::vector<CompiledWasmModule>& wasm_modules,
+      const std::optional<SharedValueConveyor>& shared_value_conveyor)
       : host_objects_(host_objects),
         shared_array_buffers_(shared_array_buffers),
-        wasm_modules_(wasm_modules) {}
+        wasm_modules_(wasm_modules),
+        shared_value_conveyor_(shared_value_conveyor) {}
 
   MaybeLocal<Object> ReadHostObject(Isolate* isolate) override {
     // Identifying the index in the message's BaseObject array is sufficient.
@@ -128,12 +131,18 @@ class DeserializerDelegate : public ValueDeserializer::Delegate {
         isolate, wasm_modules_[transfer_id]);
   }
 
+  const SharedValueConveyor* GetSharedValueConveyor(Isolate* isolate) override {
+    CHECK(shared_value_conveyor_.has_value());
+    return &shared_value_conveyor_.value();
+  }
+
   ValueDeserializer* deserializer = nullptr;
 
  private:
   const std::vector<BaseObjectPtr<BaseObject>>& host_objects_;
   const std::vector<Local<SharedArrayBuffer>>& shared_array_buffers_;
   const std::vector<CompiledWasmModule>& wasm_modules_;
+  const std::optional<SharedValueConveyor>& shared_value_conveyor_;
 };
 
 }  // anonymous namespace
@@ -198,8 +207,12 @@ MaybeLocal<Value> Message::Deserialize(Environment* env,
     shared_array_buffers.push_back(sab);
   }
 
-  DeserializerDelegate delegate(
-      this, env, host_objects, shared_array_buffers, wasm_modules_);
+  DeserializerDelegate delegate(this,
+                                env,
+                                host_objects,
+                                shared_array_buffers,
+                                wasm_modules_,
+                                shared_value_conveyor_);
   ValueDeserializer deserializer(
       env->isolate(),
       reinterpret_cast<const uint8_t*>(main_message_buf_.data),
@@ -241,6 +254,10 @@ void Message::AddTransferable(std::unique_ptr<TransferData>&& data) {
 uint32_t Message::AddWASMModule(CompiledWasmModule&& mod) {
   wasm_modules_.emplace_back(std::move(mod));
   return wasm_modules_.size() - 1;
+}
+
+void Message::AdoptSharedValueConveyor(SharedValueConveyor&& conveyor) {
+  shared_value_conveyor_.emplace(std::move(conveyor));
 }
 
 namespace {
@@ -345,6 +362,12 @@ class SerializerDelegate : public ValueSerializer::Delegate {
   Maybe<uint32_t> GetWasmModuleTransferId(
       Isolate* isolate, Local<WasmModuleObject> module) override {
     return Just(msg_->AddWASMModule(module->GetCompiledModule()));
+  }
+
+  bool AdoptSharedValueConveyor(Isolate* isolate,
+                                SharedValueConveyor&& conveyor) override {
+    msg_->AdoptSharedValueConveyor(std::move(conveyor));
+    return true;
   }
 
   Maybe<bool> Finish(Local<Context> context) {
@@ -459,11 +482,14 @@ Maybe<bool> Message::Serialize(Environment* env,
               .To(&untransferable)) {
         return Nothing<bool>();
       }
-      if (untransferable) continue;
+      if (untransferable) {
+        ThrowDataCloneException(context, env->transfer_unsupported_type_str());
+        return Nothing<bool>();
+      }
     }
 
     // Currently, we support ArrayBuffers and BaseObjects for which
-    // GetTransferMode() does not return kUntransferable.
+    // GetTransferMode() returns kTransferable.
     if (entry->IsArrayBuffer()) {
       Local<ArrayBuffer> ab = entry.As<ArrayBuffer>();
       // If we cannot render the ArrayBuffer unusable in this Isolate,
@@ -474,7 +500,10 @@ Maybe<bool> Message::Serialize(Environment* env,
       // raw data *and* an Isolate with a non-default ArrayBuffer allocator
       // is always going to outlive any Workers it creates, and so will its
       // allocator along with it.
-      if (!ab->IsDetachable()) continue;
+      if (!ab->IsDetachable() || ab->WasDetached()) {
+        ThrowDataCloneException(context, env->transfer_unsupported_type_str());
+        return Nothing<bool>();
+      }
       if (std::find(array_buffers.begin(), array_buffers.end(), ab) !=
           array_buffers.end()) {
         ThrowDataCloneException(
@@ -524,8 +553,8 @@ Maybe<bool> Message::Serialize(Environment* env,
                 entry.As<Object>()->GetConstructorName()));
         return Nothing<bool>();
       }
-      if (host_object && host_object->GetTransferMode() !=
-              BaseObject::TransferMode::kUntransferable) {
+      if (host_object && host_object->GetTransferMode() ==
+                             BaseObject::TransferMode::kTransferable) {
         delegate.AddHostObject(host_object);
         continue;
       }
