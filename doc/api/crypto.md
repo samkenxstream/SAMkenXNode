@@ -78,7 +78,7 @@ added: v0.11.8
 -->
 
 SPKAC is a Certificate Signing Request mechanism originally implemented by
-Netscape and was specified formally as part of [HTML5's `keygen` element][].
+Netscape and was specified formally as part of HTML5's `keygen` element.
 
 `<keygen>` is deprecated since [HTML 5.2][] and new projects
 should not use this element anymore.
@@ -3391,7 +3391,11 @@ On recent releases of OpenSSL, `openssl list -digest-algorithms` will
 display the available digest algorithms.
 
 The `key` is the HMAC key used to generate the cryptographic HMAC hash. If it is
-a [`KeyObject`][], its type must be `secret`.
+a [`KeyObject`][], its type must be `secret`. If it is a string, please consider
+[caveats when using strings as inputs to cryptographic APIs][]. If it was
+obtained from a cryptographically secure source of entropy, such as
+[`crypto.randomBytes()`][] or [`crypto.generateKey()`][], its length should not
+exceed the block size of `algorithm` (e.g., 512 bits for SHA-256).
 
 Example: generating the sha256 HMAC of a file
 
@@ -3648,7 +3652,7 @@ const {
   generateKey,
 } = await import('node:crypto');
 
-generateKey('hmac', { length: 64 }, (err, key) => {
+generateKey('hmac', { length: 512 }, (err, key) => {
   if (err) throw err;
   console.log(key.export().toString('hex'));  // 46e..........620
 });
@@ -3659,11 +3663,14 @@ const {
   generateKey,
 } = require('node:crypto');
 
-generateKey('hmac', { length: 64 }, (err, key) => {
+generateKey('hmac', { length: 512 }, (err, key) => {
   if (err) throw err;
   console.log(key.export().toString('hex'));  // 46e..........620
 });
 ```
+
+The size of a generated HMAC key should not exceed the block size of the
+underlying hash function. See [`crypto.createHmac()`][] for more information.
 
 ### `crypto.generateKeyPair(type, options, callback)`
 
@@ -3922,7 +3929,7 @@ const {
   generateKeySync,
 } = await import('node:crypto');
 
-const key = generateKeySync('hmac', { length: 64 });
+const key = generateKeySync('hmac', { length: 512 });
 console.log(key.export().toString('hex'));  // e89..........41e
 ```
 
@@ -3931,9 +3938,12 @@ const {
   generateKeySync,
 } = require('node:crypto');
 
-const key = generateKeySync('hmac', { length: 64 });
+const key = generateKeySync('hmac', { length: 512 });
 console.log(key.export().toString('hex'));  // e89..........41e
 ```
+
+The size of a generated HMAC key should not exceed the block size of the
+underlying hash function. See [`crypto.createHmac()`][] for more information.
 
 ### `crypto.generatePrime(size[, options[, callback]])`
 
@@ -5561,7 +5571,7 @@ When passing strings to cryptographic APIs, consider the following factors.
 
 The Crypto module was added to Node.js before there was the concept of a
 unified Stream API, and before there were [`Buffer`][] objects for handling
-binary data. As such, the many of the `crypto` defined classes have methods not
+binary data. As such, many `crypto` classes have methods not
 typically found on other Node.js classes that implement the [streams][stream]
 API (e.g. `update()`, `final()`, or `digest()`). Also, many methods accepted
 and returned `'latin1'` encoded strings by default rather than `Buffer`s. This
@@ -5989,13 +5999,12 @@ See the [list of SSL OP Flags][] for details.
 [Caveats]: #support-for-weak-or-compromised-algorithms
 [Crypto constants]: #crypto-constants
 [HTML 5.2]: https://www.w3.org/TR/html52/changes.html#features-removed
-[HTML5's `keygen` element]: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/keygen
 [JWK]: https://tools.ietf.org/html/rfc7517
 [NIST SP 800-131A]: https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-131Ar1.pdf
 [NIST SP 800-132]: https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-132.pdf
 [NIST SP 800-38D]: https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-38d.pdf
 [Nonce-Disrespecting Adversaries]: https://github.com/nonce-disrespect/nonce-disrespect
-[OpenSSL's SPKAC implementation]: https://www.openssl.org/docs/man1.1.0/apps/openssl-spkac.html
+[OpenSSL's SPKAC implementation]: https://www.openssl.org/docs/man3.0/man1/openssl-spkac.html
 [RFC 1421]: https://www.rfc-editor.org/rfc/rfc1421.txt
 [RFC 2409]: https://www.rfc-editor.org/rfc/rfc2409.txt
 [RFC 2818]: https://www.rfc-editor.org/rfc/rfc2818.txt
@@ -6009,7 +6018,7 @@ See the [list of SSL OP Flags][] for details.
 [`BN_is_prime_ex`]: https://www.openssl.org/docs/man1.1.1/man3/BN_is_prime_ex.html
 [`Buffer`]: buffer.md
 [`DiffieHellmanGroup`]: #class-diffiehellmangroup
-[`EVP_BytesToKey`]: https://www.openssl.org/docs/man1.1.0/crypto/EVP_BytesToKey.html
+[`EVP_BytesToKey`]: https://www.openssl.org/docs/man3.0/man3/EVP_BytesToKey.html
 [`KeyObject`]: #class-keyobject
 [`Sign`]: #class-sign
 [`String.prototype.normalize()`]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/normalize
@@ -6030,6 +6039,7 @@ See the [list of SSL OP Flags][] for details.
 [`crypto.createSecretKey()`]: #cryptocreatesecretkeykey-encoding
 [`crypto.createSign()`]: #cryptocreatesignalgorithm-options
 [`crypto.createVerify()`]: #cryptocreateverifyalgorithm-options
+[`crypto.generateKey()`]: #cryptogeneratekeytype-options-callback
 [`crypto.getCurves()`]: #cryptogetcurves
 [`crypto.getDiffieHellman()`]: #cryptogetdiffiehellmangroupname
 [`crypto.getHashes()`]: #cryptogethashes

@@ -7,6 +7,9 @@ DEPS_DIR="$BASE_DIR/deps"
 [ -z "$NODE" ] && NODE="$BASE_DIR/out/Release/node"
 [ -x "$NODE" ] || NODE=$(command -v node)
 
+# shellcheck disable=SC1091
+. "$BASE_DIR/tools/dep_updaters/utils.sh"
+
 NEW_VERSION="$("$NODE" --input-type=module <<'EOF'
 const res = await fetch('https://api.github.com/repos/ngtcp2/ngtcp2/releases');
 if (!res.ok) throw new Error(`FetchError: ${res.status} ${res.statusText}`, { cause: res });
@@ -19,6 +22,8 @@ EOF
 NGTCP2_VERSION_H="$DEPS_DIR/ngtcp2/ngtcp2/lib/includes/ngtcp2/version.h"
 
 CURRENT_VERSION=$(grep "#define NGTCP2_VERSION" "$NGTCP2_VERSION_H" | sed -n "s/^.*VERSION \"\(.*\)\"/\1/p")
+
+echo "Comparing $NEW_VERSION with $CURRENT_VERSION"
 
 if [ "$NEW_VERSION" = "$CURRENT_VERSION" ]; then
   echo "Skipped because ngtcp2 is on the latest version."
@@ -42,6 +47,7 @@ cd "$WORKSPACE"
 
 echo "Fetching ngtcp2 source archive..."
 curl -sL -o "$NGTCP2_ZIP.zip" "https://github.com/ngtcp2/ngtcp2/archive/refs/tags/$NGTCP2_REF.zip"
+log_and_verify_sha256sum "ngtcp2" "$NGTCP2_ZIP.zip"
 unzip "$NGTCP2_ZIP.zip"
 rm "$NGTCP2_ZIP.zip"
 mv "$NGTCP2_ZIP" ngtcp2
