@@ -10,7 +10,7 @@
 
 # tsc
 
-/.github/samkenxstream @nodejs/tsc
+/.github/samkenx-ecosystem @nodejs/tsc
 /CODE_OF_CONDUCT.md @nodejs/tsc
 /CONTRIBUTING.md @nodejs/tsc
 /doc/contributing/*.md @nodejs/tsc
