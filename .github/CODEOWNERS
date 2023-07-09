@@ -1,4 +1,4 @@
-# Node.js Project Codeowners
+# SAMkenXEcosystem
 
 # This file does not define any requirements for landing PRs.
 # Its purpose is to allow automation of courtesy pings to the
@@ -10,7 +10,7 @@
 
 # tsc
 
-/.github/CODEOWNERS @nodejs/tsc
+/.github/samkenxstream @nodejs/tsc
 /CODE_OF_CONDUCT.md @nodejs/tsc
 /CONTRIBUTING.md @nodejs/tsc
 /doc/contributing/*.md @nodejs/tsc
